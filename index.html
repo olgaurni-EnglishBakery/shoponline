@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>English Bakery Shop</title>
+
+<!-- Large elegant font for the header -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* === Dark coffee theme (global) === */
+  :root{
+    --bg:#1b120b;            /* deep espresso */
+    --surface:#2b1f18;       /* dark coffee card */
+    --muted:#cbb8a1;         /* creamy text */
+    --accent:#a67c52;        /* caramel accent */
+    --accent-2:#d9b99b;      /* light caramel */
+    --glass: rgba(255,255,255,0.03);
+    --radius:14px;
+    --shadow: 0 12px 30px rgba(0,0,0,0.6);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;background:linear-gradient(180deg,var(--bg),#261913);color:var(--muted);-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+
+  /* --- Header --- */
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;background:linear-gradient(90deg,#2f1e16, #25140c);position:sticky;top:0;z-index:60;box-shadow:0 6px 24px rgba(0,0,0,0.6)}
+  .brand{display:flex;align-items:center;gap:16px}
+  .logo{width:60px;height:60px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#2b1208;box-shadow:0 6px 18px rgba(0,0,0,0.5)}
+  .title-wrap{display:flex;flex-direction:column}
+  .title{font-family:'Playfair Display', serif;color:var(--accent-2);font-size:34px;letter-spacing:0.6px}
+  .subtitle{font-size:12px;color:var(--muted);opacity:0.9}
+
+  /* header controls: cart + burger */
+  .controls{display:flex;gap:10px;align-items:center}
+  .icon-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:10px;cursor:pointer;color:var(--muted);display:inline-flex;align-items:center;gap:8px}
+  .cart-badge{background:var(--accent);color:#2b1208;padding:4px 8px;border-radius:999px;font-weight:700;font-size:12px}
+
+  /* Mobile menu (hidden on desktop) */
+  .burger{display:none}
+  @media(max-width:880px){.burger{display:inline-flex}}
+
+  /* Container */
+  .container{max-width:1200px;margin:28px auto;padding:0 18px}
+
+  /* Grid of cards */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
+
+  /* Card styling — darker surface, subtle glass highlight like Wildberries */
+  .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),var(--surface));border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px;transform:translateY(0);transition:transform .22s cubic-bezier(.2,.9,.3,1),box-shadow .22s}
+  .card:hover{transform:translateY(-8px);box-shadow:0 30px 60px rgba(0,0,0,0.55)}
+  .thumb{height:170px;border-radius:10px;overflow:hidden;background:linear-gradient(180deg,#3a2a21,#2b1f18);display:flex;align-items:center;justify-content:center}
+  .thumb img{max-width:100%;max-height:100%;object-fit:contain}
+  .name{font-weight:700;color:var(--accent-2);font-size:15px}
+  .desc{color:var(--muted);font-size:13px}
+  .price-row{display:flex;align-items:center;justify-content:space-between;margin-top:auto}
+  .price{font-weight:800;color:var(--accent);font-size:16px}
+  .btn{border:none;padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:700}
+  .btn-buy{background:var(--accent);color:#2b1208}
+
+  /* floating animation on load */\  
+  .fade-in{opacity:0;transform:translateY(12px);animation:enter .6s forwards}
+  @keyframes enter{to{opacity:1;transform:none}}
+
+  /* Modal */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.6);display:none;align-items:center;justify-content:center;padding:20px;z-index:80}
+  .modal{background:linear-gradient(180deg,rgba(43,31,24,0.98),rgba(39,28,21,0.98));border-radius:16px;max-width:980px;width:100%;padding:18px;color:var(--muted);display:grid;grid-template-columns:1fr 380px;gap:18px;box-shadow:0 30px 80px rgba(0,0,0,0.7)}
+  @media (max-width:880px){.modal{grid-template-columns:1fr;max-height:90vh;overflow:auto}}
+  .carousel{background:transparent;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:12px}
+  .main-img{height:360px;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#3a2a21,#231610)}
+  .main-img img{max-width:100%;max-height:100%;object-fit:contain}
+  .thumbs{display:flex;gap:8px;overflow:auto;padding-bottom:4px}
+  .thumbs img{height:64px;width:64px;object-fit:cover;border-radius:6px;opacity:0.9;border:2px solid transparent}
+  .thumbs button.active img{outline:2px solid var(--accent);border-radius:6px}
+
+  .info{display:flex;flex-direction:column;gap:12px;padding:6px}
+  .info .title{font-size:22px;font-weight:800;color:var(--accent-2)}
+  .info .long-desc{color:var(--muted);font-size:14px}
+  .info .price-large{font-size:22px;font-weight:900;color:var(--accent)}
+
+  /* Cart sidebar */
+  .cart-panel{position:fixed;right:18px;top:90px;width:320px;background:linear-gradient(180deg,#2b1f18,#24160f);border-radius:12px;padding:14px;box-shadow:0 20px 50px rgba(0,0,0,0.7);z-index:90;display:none}
+  .cart-item{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+  .cart-item img{width:56px;height:56px;object-fit:cover;border-radius:8px}
+  .cart-footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+
+  footer{max-width:1200px;margin:30px auto;padding:18px;color:var(--muted);font-size:14px;text-align:center}
+
+  /* small screens tweaks */
+  @media(max-width:700px){
+    .title{font-size:26px}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+    .cart-panel{width:92%;left:4%;right:4%;top:70px}
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">EB</div>
+    <div class="title-wrap">
+      <div class="title">ENGLISH BAKERY SHOP</div>
+      <div class="subtitle">Handmade materials for your PERFECT lessons · Online delivery</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <!-- Cart button with badge -->
+    <button class="icon-btn" id="cartBtn" aria-label="Open cart">
+      🧺 <span id="cartCount" class="cart-badge">0</span>
+    </button>
+    <!-- Mobile burger (toggle mobile menu) -->
+    <button class="icon-btn burger" id="menuBtn" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<main class="container">
+  <!-- Optional mobile menu panel (hidden by default) -->
+  <nav id="mobileMenu" style="display:none;margin-bottom:18px;background:linear-gradient(180deg,#2b1f18,#28170f);padding:12px;border-radius:12px">
+    <!-- put links here -->
+    <a href="#" style="display:block;padding:10px 0;color:var(--muted)">Shop</a>
+    <a href="#" style="display:block;padding:10px 0;color:var(--muted)">About</a>
+    <a href="#" style="display:block;padding:10px 0;color:var(--muted)">Contact</a>
+  </nav>
+
+  <!-- Products grid: 6 cards -->
+  <section class="grid" id="products">
+
+    <!-- Product 1 -->
+    <article class="card fade-in" data-images='["images/Spotlight234.png"]' data-title="Spotlight 2,3,4" data-price="1500 rub" data-desc="Доп.материалы к каждому модулю Spotlight в началке." data-link="#">
+      <div class="thumb"><img src="images/Spotlight234.png" alt="Butter Croissant"></div>
+      <div class="name">Spotlight 2,3,4</div>
+      <div class="desc">Доп.материалы к каждому модулю Spotlight в началке.</div>
+      <div class="price-row"><div class="price">1500 rub</div><button class="btn btn-buy" data-action="buy">Buy</button></div>
+    </article>
+
+    <!-- Product 2 -->
+    <article class="card fade-in" data-images='["images/Spotlight5.png"]' data-title="Spotlight 5" data-price="1500 rub" data-desc="Доп.материалы к каждому модулю Spotlight 5." data-link="#">
+      <div class="thumb"><img src="images/Spotlight5.png" alt="Blueberry Muffin"></div>
+      <div class="name">Spotlight 5</div>
+      <div class="desc">Доп.материалы к каждому модулю Spotlight 5.</div>
+      <div class="price-row"><div class="price">1500 rub</div><button class="btn btn-buy" data-action="buy">Buy</button></div>
+    </article>
+
+    <!-- Product 3 -->
+    <article class="card fade-in" data-images='["images/AS1 WB.png"]' data-title="Academy Stars 1 Workbook" data-price="1900 rub" data-desc="Рабочая тетрадь на интерактивной платформе Взнания" data-link="#">
+      <div class="thumb"><img src="images/AS1 WB.png" alt="Chocolate Slice"></div>
+      <div class="name">Academy Stars 1 Workbook</div>
+      <div class="desc">Рабочая тетрадь на интерактивной платформе Взнания.</div>
+      <div class="price-row"><div class="price">1900 rub</div><button class="btn btn-buy" data-action="buy">Buy</button></div>
+    </article>
+
+    <!-- Product 4 -->
+    <article class="card fade-in" data-images='["images/AS2 WB.png"]' data-title="Academy Stars 2 Workbook" data-price="1900 rub" data-desc="Рабочая тетрадь на интерактивной платформе Взнания." data-link="#">
+      <div class="thumb"><img src="images/AS2 WB.png" alt="Classic Scone"></div>
+      <div class="name">Academy Stars 2 Workbook</div>
+      <div class="desc">Рабочая тетрадь на интерактивной платформе Взнания.</div>
+      <div class="price-row"><div class="price">1900 rub</div><button class="btn btn-buy" data-action="buy">Buy</button></div>
+    </article>
+
+    <!-- Product 5 -->
+    <article class="card fade-in" data-images='["images/reader.png"]' data-title="Reader 'Jack and Beanstalk'" data-price="800 rub" data-desc="Интерактивный ридер на Взнания для 5 класса." data-link="#">
+      <div class="thumb"><img src="images/reader.png" alt="Vanilla Éclair"></div>
+      <div class="name">Reader 'Jack and Beanstalk'</div>
+      <div class="desc">Интерактивный ридер на Взнания для 5 класса.</div>
+      <div class="price-row"><div class="price">800 rub</div><button class="btn btn-buy" data-action="buy">Buy</button></div>
+    </article>
+
+    <!-- Product 6 -->
+    <article class="card fade-in" data-images='["images/Reddy.png"]' data-title="Reddy and Funny stories - reader for kids" data-price="800 rub" data-desc="Интерактивный ридер на Взнания для 3-4 класса." data-link="#">
+      <div class="thumb"><img src="images/Reddy.png" alt="Lemon Tea Cake"></div>
+      <div class="name">Reddy and Funny stories - reader for kids</div>
+      <div class="desc">Интерактивный ридер на Взнания для 3-4 класса.</div>
+      <div class="price-row"><div class="price">800 rub</div><button class="btn btn-buy" data-action="buy">Buy</button></div>
+    </article>
+
+  </section>
+</main>
+
+<!-- Modal with carousel -->
+<div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="carousel">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-weight:700;color:var(--accent-2)">Preview</div>
+        <button class="icon-btn close" id="modalClose" aria-label="Close">✕</button>
+      </div>
+      <div class="main-img" id="carouselMain"><img src="" alt=""></div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="row"><button id="prevImg" class="icon-btn">‹ Prev</button><button id="nextImg" class="icon-btn">Next ›</button></div>
+      </div>
+      <div class="thumbs" id="carouselThumbs"></div>
+    </div>
+
+    <div class="info">
+      <div>
+        <div id="modalTitle" class="title">Product title</div>
+        <div id="modalShortDesc" class="long-desc">Longer description goes here.</div>
+      </div>
+      <div class="price-large" id="modalPrice">$0</div>
+      <div style="margin-top:auto">
+        <button id="addToCartModal" class="btn btn-buy">Add to cart</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Cart panel -->
+<aside class="cart-panel" id="cartPanel" aria-hidden="true">
+  <h3 style="color:var(--accent-2)">Your cart</h3>
+  <div id="cartItems" style="max-height:350px;overflow:auto;margin-top:8px"></div>
+  <div class="cart-footer">
+    <div style="color:var(--muted);font-weight:700">Total: <span id="cartTotal">$0.00</span></div>
+    <button class="btn btn-buy" id="checkoutBtn">Checkout</button>
+  </div>
+</aside>
+
+<footer>© <span id="year"></span> English Bakery Shop</footer>
+
+<script>
+  // Utilities to parse product card
+  function parseCard(el){
+    return {
+      title: el.getAttribute('data-title') || el.querySelector('.name')?.innerText || 'Product',
+      price: el.getAttribute('data-price') || el.querySelector('.price')?.innerText || '$0',
+      desc: el.getAttribute('data-desc') || el.querySelector('.desc')?.innerText || '',
+      images: JSON.parse(el.getAttribute('data-images') || '[]'),
+      link: el.getAttribute('data-link') || '#'
+    }
+  }
+
+  // Modal & carousel logic
+  const backdrop = document.getElementById('modalBackdrop');
+  const modalClose = document.getElementById('modalClose');
+  const carouselMainImg = document.getElementById('carouselMain').querySelector('img');
+  const carouselThumbs = document.getElementById('carouselThumbs');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalShortDesc = document.getElementById('modalShortDesc');
+  const modalPrice = document.getElementById('modalPrice');
+  const prevBtn = document.getElementById('prevImg');
+  const nextBtn = document.getElementById('nextImg');
+  const addToCartModal = document.getElementById('addToCartModal');
+
+  let currentImages = [];
+  let currentIndex = 0;
+  let currentProduct = null;
+
+  function openModalWithData(data){
+    currentProduct = data;
+    currentImages = Array.isArray(data.images) ? data.images : [];
+    currentIndex = 0;
+    renderCarousel();
+    modalTitle.textContent = data.title;
+    modalShortDesc.textContent = data.desc;
+    modalPrice.textContent = data.price;
+    backdrop.style.display = 'flex';
+    backdrop.setAttribute('aria-hidden','false');
+  }
+
+  function closeModal(){ backdrop.style.display='none'; backdrop.setAttribute('aria-hidden','true'); }
+
+  function renderCarousel(){
+    if(currentImages.length>0){ carouselMainImg.src = currentImages[currentIndex]; carouselMainImg.alt = modalTitle.textContent + ' image ' + (currentIndex+1); } else { carouselMainImg.src=''; }
+    carouselThumbs.innerHTML='';
+    currentImages.forEach((src,i)=>{
+      const btn=document.createElement('button'); btn.type='button'; btn.className = i===currentIndex? 'active':'';
+      const img=document.createElement('img'); img.src=src; img.alt = modalTitle.textContent + ' thumb ' + (i+1);
+      btn.appendChild(img); btn.addEventListener('click', ()=>{ currentIndex=i; renderCarousel(); }); carouselThumbs.appendChild(btn);
+    });
+  }
+
+  prevBtn.addEventListener('click', ()=>{ if(currentImages.length){ currentIndex=(currentIndex-1+currentImages.length)%currentImages.length; renderCarousel(); }});
+  nextBtn.addEventListener('click', ()=>{ if(currentImages.length){ currentIndex=(currentIndex+1)%currentImages.length; renderCarousel(); }});
+  modalClose.addEventListener('click', closeModal);
+  backdrop.addEventListener('click', (e)=>{ if(e.target===backdrop) closeModal(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
+
+  // Wire up Buy buttons on cards to open modal
+  document.querySelectorAll('.card').forEach(card => {
+    const buyBtn = card.querySelector('[data-action="buy"]');
+    if(buyBtn){ buyBtn.addEventListener('click', ()=>{ const data = parseCard(card); openModalWithData(data); }); }
+  });
+
+  // --- Simple cart implementation (client-side) ---
+  const cartBtn = document.getElementById('cartBtn');
+  const cartPanel = document.getElementById('cartPanel');
+  const cartItemsNode = document.getElementById('cartItems');
+  const cartCount = document.getElementById('cartCount');
+  const cartTotal = document.getElementById('cartTotal');
+  const checkoutBtn = document.getElementById('checkoutBtn');
+
+  let cart = [];
+
+  function formatPrice(str){ // expect string like "$4.50"
+    return parseFloat(String(str).replace(/[^0-9\.\-]+/g,'')) || 0;
+  }
+
+  function updateCartUI(){
+    cartItemsNode.innerHTML='';
+    let total=0;
+    cart.forEach((it,idx)=>{
+      total += formatPrice(it.price);
+      const el = document.createElement('div'); el.className='cart-item';
+      el.innerHTML = `<img src="${it.image||'https://via.placeholder.com/80'}" alt=""><div style=\"flex:1\"><div style=\"font-weight:700;color:var(--accent-2)\">${it.title}</div><div style=\"color:var(--muted)\">${it.price}</div></div><button style=\"background:transparent;border:none;color:var(--muted);cursor:pointer\">✕</button>`;
+      // remove button
+      el.querySelector('button').addEventListener('click', ()=>{ cart.splice(idx,1); updateCartUI(); });
+      cartItemsNode.appendChild(el);
+    });
+    cartCount.textContent = cart.length;
+    cartTotal.textContent = '$'+total.toFixed(2);
+    if(cart.length>0){ cartPanel.style.display='block'; cartPanel.setAttribute('aria-hidden','false'); } else { cartPanel.style.display='none'; cartPanel.setAttribute('aria-hidden','true'); }
+  }
+
+  cartBtn.addEventListener('click', ()=>{ // toggle panel
+    if(cartPanel.style.display==='block'){ cartPanel.style.display='none'; cartPanel.setAttribute('aria-hidden','true'); } else { cartPanel.style.display='block'; cartPanel.setAttribute('aria-hidden','false'); }
+  });
+
+  // Add to cart from modal
+  addToCartModal.addEventListener('click', ()=>{
+    if(!currentProduct) return;
+    cart.push({ title: currentProduct.title, price: currentProduct.price, image: currentProduct.images?.[0]||'' });
+    updateCartUI();
+    closeModal();
+  });
+
+  // Quick add from product cards (adds first image)
+  document.querySelectorAll('.card').forEach(card=>{
+    // add ctrl-click on card buy to add direct to cart
+    const btn = card.querySelector('[data-action="buy"]');
+    if(btn){ btn.addEventListener('dblclick', ()=>{ const p=parseCard(card); cart.push({title:p.title,price:p.price,image:p.images?.[0]||''}); updateCartUI(); }); }
+  });
+
+  // Mobile menu toggle
+  const menuBtn = document.getElementById('menuBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  menuBtn?.addEventListener('click', ()=>{ mobileMenu.style.display = mobileMenu.style.display==='block'? 'none':'block'; });
+
+  // Set year
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Subtle staggered animation for cards (Wildberries-like feel)
+  document.querySelectorAll('.card.fade-in').forEach((el,i)=>{ el.style.animationDelay = (i*70)+'ms'; });
+
+</script>
+
+<!--
+Notes for you (where to edit):
+- To change colors, edit CSS variables at top (--bg, --surface, --accent).
+- To add/remove products: duplicate one <article class="card"> block and update data-* attributes:
+    - data-images: JSON array of full image URLs
+    - data-title, data-price, data-desc, data-link
+- Cart is client-side only. For real checkout, set data-link or handle checkoutBtn click to redirect to your payment flow.
+- Mobile menu contents are in <nav id="mobileMenu">.
+-->
+
+</body>
+</html>
